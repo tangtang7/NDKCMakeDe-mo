@@ -1,0 +1,126 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    compileSdk 32
+
+    defaultConfig {
+        applicationId "com.example.ndkcmakedemo"
+        minSdk 21
+        targetSdk 32
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // This block is different from the one you use to link Gradle to your CMake or ndk-build script.
+        // 此模块与用来链接 Gradle 的 CMake 或 ndk-build 脚本的模块不同
+        externalNativeBuild {
+
+            // For ndk-build, instead use the ndkBuild block.
+            // 对于 ndk-build，使用 ndkBuild 替换
+            cmake {
+
+                // Passes optional arguments to CMake. 将可选参数传递给 CMake。
+                arguments "-DANDROID_ARM_NEON=TRUE", "-DANDROID_TOOLCHAIN=clang"
+
+                // Sets a flag to enable format macro constants for the C compiler.
+                // 设置一个标志以启用 C 编译器的格式宏常量。
+                cFlags "-D__STDC_FORMAT_MACROS"
+
+                // Sets optional flags for the C++ compiler.
+                // 为 C++ 编译器设置可选标志。
+                cppFlags "-fexceptions", "-frtti"
+            }
+        }
+        // Similar to other properties in the defaultConfig block,
+        // you can configure the ndk block for each product flavor in your build configuration.
+        // 类似于 defaultConfig 模块中的其他属性，可以在构建配置中为每种产品类型配置 ndk 模块。
+        ndk {
+            // Specifies the ABI configurations of your native
+            // libraries Gradle should build and package with your app.
+            // 指定 Gradle 应该构建并打包到应用中的原生库的ABI配置。
+            abiFilters 'arm64-v8a' //'x86', 'x86_64', 'armeabi', 'armeabi-v7a'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+//    productFlavors {
+//        demo {
+//            externalNativeBuild {
+//                cmake {
+//                    // Specifies which native libraries or executables to build and package for this product flavor.
+//                    // The following tells Gradle to build only the "native-lib-demo" and "my-executible-demo" outputs from the linked CMake project.
+//                    // If you don't configure this property, Gradle builds all executables and shared object libraries that you define in your CMake (or ndk-build) project.
+//                    // However, by default, Gradle packages only the shared libraries in your app.
+//                    // 指定要为此产品风格构建和打包哪些原生库或可执行程序。
+//                    // 下面告诉 Gradle 只从链接的 CMake 项目中构建 “native-lib-demo” 和 “my-execuitable-demo” 输出。
+//                    // 如果没有配置这个属性，Gradle 会构建你 在CMake(或 ndk-build)项目中定义的所有可执行文件和共享对象库。
+//                    // 但是，默认情况下，Gradle 只打包应用程序中的共享库。
+//                    targets "native-lib-demo",
+//                            // You need to specify this executable and its sources in your CMakeLists.txt using the add_executable() command.
+//                            // However, building executables from your native sources is optional,
+//                            // and building native libraries to package into your app satisfies most project requirements.
+//                            // 需要在 CMakeLists.txt 中使用 add_executable() 命令指定这个可执行文件及其源文件。
+//                            // 然而，从本机源代码构建可执行程序是可选的，且构建本机库打包到应用程序中可以满足大多数项目需求。
+//                            "my-executible-demo"
+//                }
+//            }
+//        }
+//
+//        paid {
+//            externalNativeBuild {
+//                cmake {
+//                    targets "native-lib-paid",
+//                            "my-executible-paid"
+//                }
+//            }
+//        }
+//    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    // Use this block to link Gradle to your CMake or ndk-build script.
+    // Encapsulates your external native build configurations.
+    externalNativeBuild {
+        // Encapsulates your CMake build configurations.
+        cmake {
+            // Provides a relative path to your CMake build script.
+            path file('src/main/cpp/CMakeLists.txt')
+            version '3.18.1'
+        }
+    }
+    // 解决报错：2 files found with path 'lib/arm64-v8a/libgmath.so' from inputs:
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+}
